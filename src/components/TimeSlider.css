@@ -1,0 +1,21 @@
+.TimeSlider .rc-slider-handle {
+    border-color:#3f51b5;
+    background:#3f51b5;
+}
+.TimeSlider .rc-slider-track {
+    background:#aaa;
+}
+.TimeSlider {
+    width:30px;
+    display:flex;
+    justify-content:center;
+    flex-direction: column;
+    align-items: center;
+}
+.TimeSlider .rc-slider {
+    height:150px;
+}
+.rc-slider-tooltip {
+    z-index:2000;
+}
+

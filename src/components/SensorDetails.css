@@ -1,0 +1,33 @@
+.sensor-name {
+    font-size:2em;
+}
+
+.results .row {
+    display:flex;
+    align-items: center;
+    border-top:1px solid #eee;
+}
+
+.results .row .cell {
+    padding:0.5em; 
+}
+
+.results .value {
+    flex-grow: 2;
+    min-width:50px;
+    font-weight:bold;
+}
+.results label {
+    width:80px;
+    color:#999;
+    font-size:0.8em;
+}
+.results .unit {
+    padding-left:0.5em;
+    font-size:0.8em;
+}
+
+.results .row .PercentageLabel {
+    width:60px;
+    align-self: stretch;
+}
