@@ -39,13 +39,13 @@ class App extends Component {
 
   componentDidMount() {
     dataService.subscribeData({
-      next : (mapData)=>{
+      onNext : (mapData)=>{
         console.log('mapData',mapData);
         this.setState((state)=>(Object.assign({}, state, {mapData:mapData})));
       }
     });
     dataService.subscribeLoading({
-      next : (loading)=>{
+      onNext : (loading)=>{
         this.setState((state)=>(Object.assign({}, state, {loading:loading})));
       }
     })

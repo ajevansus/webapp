@@ -15,7 +15,7 @@
     "react-leaflet": "^1.7.1",
     "react-leaflet-markercluster": "^1.1.6",
     "react-scripts": "1.0.14",
-    "rxjs": "^5.5.2",
+    "rx-lite": "^4.0.8",
     "typeface-roboto": "0.0.43"
   },
   "scripts": {

@@ -1,4 +1,4 @@
-import Rx from 'rxjs'
+import Rx from 'rx-lite'
 import moment from 'moment'
 import {SensorLayer} from './Model'
 import storage from './Storage'
@@ -56,7 +56,7 @@ class DataService {
         this.requestId = Math.random();
         console.debug("REQUEST ID="+this.requestId);
         const r = this.requestId;
-        this.loadingSubject.next(true);
+        this.loadingSubject.onNext(true);
         
         Promise.all([oapService.getSensors(), oapService.getAllSensorsData({time:this.query.time})])
             .then((resp)=>{
@@ -64,14 +64,14 @@ class DataService {
                     console.debug("REQUEST ID="+r+" cancelled");
                     return; //cancelled
                 }
-                this.loadingSubject.next(false);
+                this.loadingSubject.onNext(false);
                 this.update({sensors:resp[0], states:resp[1]});
             },(e)=>{console.error(e)});
     }
 
     handleError(e) {
         console.error(e);
-        this.loadingSubject.next(false);
+        this.loadingSubject.onNext(false);
     }
     
     update(response) {
@@ -83,7 +83,7 @@ class DataService {
             user: {fav: this.favs.indexOf(s.sensorId) !== -1 }
           }));
 
-        this.dataSubject.next({
+        this.dataSubject.onNext({
             sensors: data,  //rename?
             layers: this.query.layer,
             time: this.query.time || moment().minutes(0),
