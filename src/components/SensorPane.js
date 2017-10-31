@@ -7,6 +7,7 @@ import Avatar from 'material-ui/Avatar';
 import IconButton from 'material-ui/IconButton';
 import Favorite from 'material-ui-icons/Favorite';
 import FavoriteBorder from 'material-ui-icons/FavoriteBorder';
+// eslint-disable-next-line
 import Timeline from 'material-ui-icons/Timeline';
 import moment from 'moment'
 import { withStyles } from 'material-ui/styles';
@@ -78,6 +79,7 @@ class SensorPane extends Component {
       }
 
     render() {
+        // eslint-disable-next-line
         const {sensorTuple,onFavoriteClick,onInfoClick,onChartClick,onClick,classes,indicator,collapsible} = this.props;
         const subheader = <div className={classes.subheader}>
 
@@ -112,9 +114,9 @@ class SensorPane extends Component {
                 <IconButton onClick={onFavoriteClick}>
                     {sensorTuple.user.fav ? <Favorite/> : <FavoriteBorder/>}
                 </IconButton>
-                <IconButton onClick={onChartClick}>
+                {/* <IconButton onClick={onChartClick}>
                     <Timeline/>
-                </IconButton>
+                </IconButton> */}
                 { sensorTuple.sensor.link ? (
                 <IconButton onClick={onInfoClick}>
                     <InfoOutline/>

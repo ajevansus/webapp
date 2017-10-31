@@ -94,8 +94,7 @@ class DataService {
     onTimeChanged(time) {
         console.log('TIME CHANGE',time);
         this.query = Object.assign({}, this.query, {time: time ? moment().add(time, 'hours').minutes(0) : null});
-        this.fetch();
-
+        setTimeout(()=>this.fetch(), 100); //buffer series of events when sliding fast
 
         if (this.query.time) {
             clearInterval(this.autoUpdate);

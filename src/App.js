@@ -72,7 +72,7 @@ class App extends Component {
   }
 
   onInfoClick(sensor) {
-    alert('TODO show info for '+sensor.sensorId);
+    if (sensor.link) window.open(sensor.link,"_blank");
   }
 
   onChartClick(sensor) {

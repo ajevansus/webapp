@@ -1,4 +1,5 @@
-import {Credentials, DynamoDB} from "aws-sdk";
+import DynamoDB from "aws-sdk/clients/dynamodb";
+import {Credentials} from "aws-sdk/lib/core";
 
 /*
 
@@ -146,7 +147,6 @@ class Cache {
 export class PmService {
 
   cache = new Cache();
-  _loading = false;
   LATEST_RESULTS_THRESHOLD = 3*3600; // < 3h
 
   constructor() {
@@ -157,10 +157,6 @@ export class PmService {
       apiVersion: '2012-08-10',
       params: {}
     });
-  }
-
-  get loading() {
-    return this._loading;
   }
 
   getSensors() {
