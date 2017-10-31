@@ -45,9 +45,9 @@ class DataService {
     shouldDisplay(sensor) {
         switch (this.query.layer) {
             case SensorLayer.FAVORITE : return this.favs.indexOf(sensor.sensorId) !== -1;
-            case SensorLayer.TEST : return sensor.test;
-            case SensorLayer.OUTDOOR : return !sensor.indoor && !sensor.test;
-            case SensorLayer.INDOOR : return sensor.indoor && !sensor.test;
+            case SensorLayer.TEST : return sensor.config.test;
+            case SensorLayer.OUTDOOR : return !sensor.config.indoor && !sensor.config.test;
+            case SensorLayer.INDOOR : return sensor.config.indoor && !sensor.config.test;
             default: return false;
         }
     }

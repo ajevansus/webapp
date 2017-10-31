@@ -83,8 +83,8 @@ class SensorPane extends Component {
         const {sensorTuple,onFavoriteClick,onInfoClick,onChartClick,onClick,classes,indicator,collapsible} = this.props;
         const subheader = <div className={classes.subheader}>
 
-{sensorTuple.sensor.test ? <BugReport className={classes.headerIcon}/> : ''}
-            {sensorTuple.sensor.indoor ? <Home className={classes.headerIcon}/> : <NaturePeople className={classes.headerIcon}/>}
+{sensorTuple.sensor.config.test ? <BugReport className={classes.headerIcon}/> : ''}
+            {sensorTuple.sensor.config.indoor ? <Home className={classes.headerIcon}/> : <NaturePeople className={classes.headerIcon}/>}
             {moment(((sensorTuple.state||{}).localTime || sensorTuple.sensor.lastSeen)*1000).calendar()}
             <span className={classes.flexGrow}/>
         </div>
