@@ -67,6 +67,11 @@ class SensorMap extends Component {
   render() {
     
     const {center,zoom,loading,onViewportChanged,data,onFavoriteClick,onSensorLayerChanged,onTimeChanged,onInfoClick,onChartClick,classes} = this.props;    
+
+    
+    const aqicn = 'https://tiles.waqi.info/tiles/usepa-aqi/{z}/{x}/{y}.png?token=64d56f3f45c2abc8e08ce8012f05d9aecb0a3c54';
+    const carto = 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png';
+
     
     return (
 
@@ -74,9 +79,14 @@ class SensorMap extends Component {
         <ZoomControl position='bottomright'/>
         <TileLayer
           attribution='&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/attribution">CARTO</a>'
-          url='https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png'
+          url={carto}
         />
         
+        {
+          //http://aqicn.org/faq/2015-09-18/map-web-service-real-time-air-quality-tile-api/
+          //<TileLayer url={aqicn}/>
+        }
+
         <MarkerClusterGroup options={this.markerclusterOptions} wrapperOptions={{enableDefaultStyle: true}}
           ref={(m) => {
               if (m) {

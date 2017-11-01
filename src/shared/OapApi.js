@@ -177,6 +177,7 @@ export class PmService {
                             // defaultConfig < stateConfig < fixedConfig
                             s.config = Object.assign({test:1,indoor:false},state.config,s.config);
                             s.lastSeen = state.serverTime; //fixme
+                            s.name = s.name || s.sensorId;
                             sensors[s.sensorId] = s;
                         }
                       });

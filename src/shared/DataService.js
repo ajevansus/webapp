@@ -19,7 +19,7 @@ class DataService {
             layer: storage.storageGet('layer', SensorLayer.OUTDOOR)  //outdoor
         }
         this.last = {}
-        this.favs=storage.storageGet('favs',[]);   
+        this.favs=storage.storageGet('favorites',{});   
         
         //fetch & set auto-refresh
         this.onTimeChanged(0);
@@ -44,8 +44,8 @@ class DataService {
     }
     shouldDisplay(sensor) {
         switch (this.query.layer) {
-            case SensorLayer.FAVORITE : return this.favs.indexOf(sensor.sensorId) !== -1;
-            case SensorLayer.TEST : return sensor.config.test;
+            case SensorLayer.FAVORITE : return this.isFavorite(sensor.sensorId);
+            case SensorLayer.TEST : return !!sensor.config.test;
             case SensorLayer.OUTDOOR : return !sensor.config.indoor && !sensor.config.test;
             case SensorLayer.INDOOR : return sensor.config.indoor && !sensor.config.test;
             default: return false;
@@ -57,6 +57,7 @@ class DataService {
         console.debug("REQUEST ID="+this.requestId);
         const r = this.requestId;
         this.loadingSubject.onNext(true);
+        const _query = Object.assign({}, this.query);
         
         Promise.all([oapService.getSensors(), oapService.getAllSensorsData({time:this.query.time})])
             .then((resp)=>{
@@ -65,7 +66,7 @@ class DataService {
                     return; //cancelled
                 }
                 this.loadingSubject.onNext(false);
-                this.update({sensors:resp[0], states:resp[1]});
+                this.update({sensors:resp[0], states:resp[1]}, _query);
             },(e)=>{console.error(e)});
     }
 
@@ -74,20 +75,23 @@ class DataService {
         this.loadingSubject.onNext(false);
     }
     
-    update(response) {
+    update(response, query) {
         this.last = response || this.last;
+        query = query || this.query;
 
         let data = Object.getOwnPropertyNames(this.last.sensors).map((sensorId)=>this.last.sensors[sensorId]).filter((s)=>(this.shouldDisplay(s))).map((s)=>({
             sensor: s, //comes from oap_things table (predefined values that cannot be altered by user)
             state: this.last.states[s.sensorId], //comes from oap_last/oap_hour table
-            user: {fav: this.favs.indexOf(s.sensorId) !== -1 }
+            user: {fav: this.isFavorite(s.sensorId)}
           }));
+
+        data.sort((s1,s2)=>(s1.sensor.name.localeCompare(s2.sensor.name)));
 
         this.dataSubject.onNext({
             sensors: data,  //rename?
-            layers: this.query.layer,
-            time: this.query.time || moment().minutes(0),
-            timeHourOffset: this.query.time ? this.query.time.diff(moment(), 'hours') : 0
+            layers: query.layer,
+            time: query.time || moment().minutes(0),
+            timeHourOffset: query.time ? query.time.diff(moment(), 'hours') : 0
         });
     }
 
@@ -103,15 +107,17 @@ class DataService {
         }
     }
 
+    isFavorite(sensorId) {
+        return !!this.favs[sensorId];
+    }
+
     onFavoriteSensor(sensorId) {
-        let sensorIdx = this.favs.indexOf(sensorId);
-        if (sensorIdx === -1) {
-            this.favs = [...this.favs, sensorId];
+        if (this.isFavorite(sensorId)) {
+            delete this.favs[sensorId];
         } else {
-            this.favs = this.favs.slice();
-            this.favs.splice(sensorIdx, 1);
+            this.favs[sensorId] = 1;
         }
-        storage.storagePut('favs', this.favs);
+        storage.storagePut('favorites', this.favs);
         this.update();
     }
 
