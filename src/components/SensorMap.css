@@ -1,0 +1,55 @@
+.leaflet-container {
+    position:absolute;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+}
+
+.leaflet-popup-content {
+    margin:0;
+}
+.leaflet-popup-content .SensorPane {
+    width: 230px;
+    border:none;
+    box-shadow:none;
+    font-size:11px;
+}
+
+.leaflet-touch .leaflet-control-layers, .leaflet-touch .leaflet-bar {
+    border:1px solid #ccc;
+    border-radius:0;
+}
+
+.leaflet-bar a, .leaflet-bar a:hover {
+    color:#999;
+}
+
+.sensor-marker {
+    height:60px;
+    width:60px;
+    border-radius:30px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: rgba(255,255,255,0.2);
+}
+
+.sensor-marker-cluster {
+    border-radius:30px;
+    border-width: 5px;
+    border-style: solid;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    border-color: rgba(255,255,255,0.2);
+    color:rgba(255,255,255,0.6);
+}
+
+
+.leaflet-popup-content-wrapper {
+    border-radius:3px;
+}
+
+.leaflet-container .leaflet-control-attribution {
+    opacity:0.5
+}

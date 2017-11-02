@@ -57,6 +57,7 @@ class TimeSlider extends Component {
             <div className={classes.sliderWrapper}>
             <Slider className={classes.slider}
                     trackStyle={sliderStyles.track}
+                    railStyle={sliderStyles.track}
                     handleStyle={sliderStyles.handle}
                     min={0} max={max} defaultValue={max-value} vertical={true}
                     onBeforeChange={onBeforeChange}

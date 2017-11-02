@@ -16,41 +16,17 @@ html,body {
   width:100%;
 }
 
-.leaflet-container {
-  position:absolute;
-  top:0;
-  bottom:0;
-  left:0;
-  right:0;
-}
-
-.leaflet-popup-content {
-  margin:0;
-}
-.leaflet-popup-content .SensorPane {
-  width: 230px;
-  border:none;
-  box-shadow:none;
-  font-size:11px;
-}
-
-.leaflet-touch .leaflet-control-layers, .leaflet-touch .leaflet-bar {
-  border:1px solid #ccc;
-  border-radius:0;
-}
-
-.leaflet-bar a, .leaflet-bar a:hover {
-  color:#999;
-}
-
-.sensor-marker {
-  height:60px;
-  width:60px;
-  background-color:#000;
-  border-radius:30px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: rgba(255,255,255,0.2);
+.gradient {
+  background: linear-gradient(to bottom, rgba(117,7,8,1) 0%,
+  rgba(191,0,0,1) 11%,
+  rgba(234,50,9,1) 22%,
+  rgba(247,115,79,1) 33%,
+  rgba(255,154,86,1) 44%,
+  rgba(245,198,96,1) 55%,
+  rgba(216,216,31,1) 66%,
+  rgb(136, 177, 66) 77%,
+  rgb(127, 196, 49) 88%,
+  rgb(156, 236, 102) 100%);
 }
 
 .level-undef {
@@ -95,32 +71,4 @@ html,body {
 
 .level-9 {
   background-color:rgb(109, 7, 9);
-}
-
-.sensor-marker-cluster {
-  border-radius:30px;
-  border-width: 5px;
-  border-style: solid;
-  display:flex;
-  justify-content: center;
-  align-items: center;
-  border-color: rgba(255,255,255,0.2);
-  color:rgba(255,255,255,0.6);
-}
-
-.gradient {
-  background: linear-gradient(to bottom, rgba(117,7,8,1) 0%,
-  rgba(191,0,0,1) 11%,
-  rgba(234,50,9,1) 22%,
-  rgba(247,115,79,1) 33%,
-  rgba(255,154,86,1) 44%,
-  rgba(245,198,96,1) 55%,
-  rgba(216,216,31,1) 66%,
-  rgba(147,196,74,1) 77%,
-  rgba(112,201,18,1) 88%,
-  rgba(140,221,86,1) 100%);
-}
-
-.leaflet-popup-content-wrapper {
-  border-radius:3px;
 }
