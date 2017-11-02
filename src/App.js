@@ -1,6 +1,7 @@
 import React, { Component }  from 'react'
 import SensorMap from './components/SensorMap'
 import {MuiThemeProvider,createMuiTheme} from 'material-ui/styles'
+//import {lightGreen} from 'material-ui/colors'
 import AppBar from 'material-ui/AppBar';
 import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography'
@@ -18,6 +19,7 @@ import {SensorLayer} from './shared/Model'
 
 const theme = createMuiTheme({
   palette: {
+    //primary : lightGreen
   }
 });
 

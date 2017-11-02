@@ -1,14 +1,24 @@
 import React, { Component }  from 'react'
 import Slider from 'rc-slider'
-import { CircularProgress } from 'material-ui/Progress';
 import 'rc-slider/assets/index.css'
-import './TimeSlider.css'
+import { CircularProgress } from 'material-ui/Progress';
 import { withStyles } from 'material-ui/styles';
+import { withTheme } from 'material-ui/styles';
 
 
 const styles = theme => ({
-    slider : {
+    root : {
+        width:'30px',
+        display:'flex',
+        justifyContent:'center',
+        flexDirection:'column',
+        alignItems:'center'
+    },
+    sliderWrapper : {
         padding: '15px 0 5px 0'
+    },
+    slider : {
+        height:'150px'
     },
     progress : {
         marginTop:'5px'
@@ -20,18 +30,6 @@ class TimeSlider extends Component {
     state = {
         slider:false
     }
-    
-    renderSlider() {
-        if (this.state.slider) {
-            return (<div className={this.props.classes.slider}><Slider min={0} max={this.props.max} defaultValue={this.props.max-this.props.value} vertical={true}
-            onBeforeChange={this.props.onBeforeChange}
-            onChange={(value)=>{this.onChange(value)}}
-            onAfterChange={(value)=>{
-                    this.toggleSlider();
-                    this.props.onAfterChange()}}
-            /></div>)
-        }
-    }
 
     onChange(value) {
         console.debug('change',value);
@@ -42,11 +40,38 @@ class TimeSlider extends Component {
         this.setState(Object.assign({},this.state,{slider:!this.state.slider}));
     }
 
+    renderSlider() {
+        const {theme,classes,max,value,onBeforeChange,onAfterChange} = this.props;
+        const sliderStyles = {
+            track : {
+                backgroundColor:theme.palette.grey['A200']
+            },
+            handle : {
+                borderColor: theme.palette.primary[500],
+                background: theme.palette.primary[500]
+            }
+        }
+
+        if (this.state.slider) {
+            return (
+            <div className={classes.sliderWrapper}>
+            <Slider className={classes.slider}
+                    trackStyle={sliderStyles.track}
+                    handleStyle={sliderStyles.handle}
+                    min={0} max={max} defaultValue={max-value} vertical={true}
+                    onBeforeChange={onBeforeChange}
+                    onChange={(val)=>{this.onChange(val)}}
+                    onAfterChange={()=>{this.toggleSlider();onAfterChange()}}
+            />
+            </div>)
+        }
+    }
+
     render() {
         const {classes,anim,label} = this.props;
         let labelElem = anim === true ? <CircularProgress className={classes.progress} size={20}/> : <span>{label}</span>;
         return (
-            <div className="leaflet-control-layers leaflet-control leaflet-bar TimeSlider">
+            <div className={"leaflet-control-layers leaflet-control leaflet-bar "+classes.root}>
                 {this.renderSlider()}
                 <a onClick={()=>this.toggleSlider()}>
                     {labelElem}
@@ -56,4 +81,4 @@ class TimeSlider extends Component {
     }
 }
 
-export default withStyles(styles)(TimeSlider)
+export default withTheme()(withStyles(styles)(TimeSlider))
