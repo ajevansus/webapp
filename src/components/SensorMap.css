@@ -55,3 +55,7 @@
 .leaflet-container .leaflet-control-attribution {
     opacity:0.5
 }
+
+.leaflet-popup-content .SensorPane {
+    margin-right:-1px;
+}
