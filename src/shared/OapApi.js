@@ -103,6 +103,61 @@ class Cache {
   clear() {
     this.cache = {};
   }
+
+  /**
+   * the idea here is that we should not repeat two identical request, even if they are fired 
+   * simultanously. whenever a request is started, we create a cache entry and queue similar requests
+   * until original one is resolved or rejected.
+   * 
+   * @param {*} cacheKey 
+   * @param {*} ttl 
+   * @param {*} handler 
+   */
+  cachedRequest(cacheKey, ttl, handler) {
+    return new Promise((resolve, reject)=>{
+      let entry = this.cache[cacheKey];
+      console.debug('cache query', cacheKey);
+      if (entry && entry.expire !== undefined) {
+        if (entry.expire < 0 || new Date().getTime() < entry.expire) {
+          console.debug('cache hit', cacheKey);
+          resolve(entry.data);
+          return;
+        }
+        console.debug('cache miss (expired)', cacheKey);
+        entry = null;
+      }
+
+      let execute;      
+      if (!entry) {
+        execute = true;
+        entry = this.cache[cacheKey] = {queue:[]};
+      }
+      if (entry.queue) {
+        entry.queue.push({resolve:resolve, reject:reject});
+      }
+
+      if (execute) {
+        console.debug('cache miss (request executed)', cacheKey);
+        handler((data)=>{
+          console.debug('cache request resolved', cacheKey);
+          let queue = entry.queue;
+          this.put(cacheKey, data, ttl);
+          queue.forEach(q=>{
+            q.resolve(data);
+          });
+        }, (err)=>{
+          console.debug('cache request rejected', cacheKey);
+          let queue = entry.queue;
+          this.remove(cacheKey);
+          queue.forEach(q=>{
+            q.reject(err);
+          });
+        });
+      } else {
+        console.debug('cache miss (request pending)', cacheKey);
+      }
+    });
+  }
 }
 
 const API_URL = "https://f3kwdjctn5.execute-api.eu-west-1.amazonaws.com/prod";
@@ -114,8 +169,7 @@ export class PmService {
 
   getSensors() {
     //we need to cheat a bit here, because config values are stored in state table and not in things table.
-    return new Promise((resolve, reject) => {
-        if (!this.cache.get("sensors", resolve)) {
+    return this.cache.cachedRequest("sensors", 60000 * 60 * 12, (resolve, reject) => {
             this.getLatestSensorsData().then((lastSensorData)=>{
               fetch(API_URL+"/sensors")
               .then(status)
@@ -133,10 +187,9 @@ export class PmService {
                   }
                 });
                 console.debug("sensors",sensors);
-                resolve(this.cache.put("sensors",sensors));
+                resolve(sensors);
               }).catch(reject);
         }).catch(reject);
-      }
     });
   }
 
@@ -179,21 +232,28 @@ export class PmService {
   }
 
   getLatestSensorsData() {
-    return new Promise((resolve, reject) => {
-        const cacheKey = "data_latest";
-        if (this.cache.get(cacheKey,resolve)) return;
-        console.debug("search latest");
+    return this.cache.cachedRequest("data_latest", 60000*5, (resolve, reject) => {
         fetch(API_URL+"/state")
         .then(status)
         .then(json)
         .then(mapStateToSensor)
-        .then((data)=>{
-          resolve(this.cache.put(cacheKey, data, 60000 * 5)); //5 min
-        }).catch(reject);
+        .then(resolve)
+        .catch(reject);
     });
   }
 
   getHourSensorsData(hourEpoch) {
+
+    return this.cache.cachedRequest("data_hourEpoch_"+hourEpoch, 60000 * 5, (resolve, reject) => {
+      fetch(API_URL+"/state/hour/"+hourEpoch)
+      .then(status)
+      .then(json)
+      .then(mapStateToSensor)
+      .then(resolve)
+      .catch(reject);
+    });
+
+    /*
     return new Promise((resolve, reject) => {
         const cacheKey = "data_hourEpoch_"+hourEpoch;
         if (this.cache.get(cacheKey,resolve)) return;
@@ -206,7 +266,7 @@ export class PmService {
         .then((data)=>{
           resolve(this.cache.put(cacheKey, data, 60000 * 5)); //5 min
         }).catch(reject);
-    });
+    });*/
   }
 
   getAllSensorsData(query) {
