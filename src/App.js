@@ -51,10 +51,17 @@ class App extends Component {
     storage.storagePut('map.center', viewport.center);
     storage.storagePut('map.zoom', viewport.zoom);
     
-    // well, this does not work, probably due to 'center', zoom is ok, can we split?
-    this.setState((prevState)=>(
-      Object.assign({},prevState,{zoom:viewport.zoom})
-    ));
+    // setState here causes map refresh and popup flickering;
+    // since it is called by map itself we don't need it, but
+    // we need to store zoom
+    //
+    // this.setState((prevState)=>(
+    //   Object.assign({},prevState,{zoom:viewport.zoom})
+    // ));
+    // eslint-disable-next-line
+    this.state.center = viewport.center;
+    // eslint-disable-next-line
+    this.state.zoom = viewport.zoom;
   }
 
   onSelectSensor(sensor) {

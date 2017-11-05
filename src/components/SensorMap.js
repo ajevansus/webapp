@@ -70,11 +70,10 @@ class SensorMap extends Component {
     
     const {center,zoom,loading,onViewportChanged,data,onFavoriteClick,onSensorLayerChanged,onTimeChanged,onInfoClick,onChartClick,classes} = this.props;    
 
-    
+    // eslint-disable-next-line
     const aqicn = 'https://tiles.waqi.info/tiles/usepa-aqi/{z}/{x}/{y}.png?token=64d56f3f45c2abc8e08ce8012f05d9aecb0a3c54';
     const carto = 'https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png';
 
-    
     return (
 
       <Map ref={(map)=>this.map=map} center={center} zoom={zoom} zoomControl={false} onViewportChanged={onViewportChanged}>
