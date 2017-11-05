@@ -97,7 +97,8 @@ class SensorMap extends Component {
           }>
             {data.sensors.map((s)=>{
                 let markerIcon = L.divIcon({
-                  className: 'sensor-marker level-'+(s.state && s.state.results ? s.state.results.aqi : 'undef'),
+                  className: 'sensor-marker sensor-group-'+(s.sensor.group || 'undef')+' level-'+(s.state && s.state.results ? s.state.results.aqi : 'undef'),
+                  iconSize: L.point(22,22),
                   iconAnchor: L.point(11,11),
                   popupAnchor: L.point(0,-11)
                 });

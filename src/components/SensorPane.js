@@ -57,7 +57,7 @@ const styles = theme => ({
         width:'1em',
         height:'1em',
         minWidth:'1em',
-        border: '4px solid rgba(255,255,255,0.5)',
+        border: '5px solid rgba(255,255,255,0.3)',
         boxSizing: 'border-box'
     }  
 });
@@ -91,7 +91,7 @@ class SensorPane extends Component {
 
         const title = (<div className={classes.headerTitle}>{sensorTuple.sensor.name}
                             <span className={classes.flexGrow}/>
-                            {indicator?<div className={classes.indicator+' level-'+(sensorTuple.state && sensorTuple.state.results ? sensorTuple.state.results.aqi : 'undef')}></div>:''}
+                            {indicator?<div className={classes.indicator+' sensor-group-'+(sensorTuple.sensor.group||'undef')+' level-'+(sensorTuple.state && sensorTuple.state.results ? sensorTuple.state.results.aqi : 'undef')}></div>:''}
                             </div>)
 
         let avatarUrl = sensorTuple.sensor.avatarUrl;

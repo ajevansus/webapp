@@ -1,3 +1,4 @@
+import {calculateLevel} from './Utils'
 
 /*
 
@@ -58,8 +59,8 @@ function json(response) {
 
 function computeAQI(thingState) {
   let val = thingState.results.pm.pm2_5;
-  let aqi = Math.max(0, Math.min(9, Math.floor(val / 5))); // 0 - 9, 100%pm2.5 = 5
-  return aqi
+  //let aqi = Math.max(0, Math.min(9, Math.floor(val / 5))); // 0 - 9, 100%pm2.5 = 5
+  return calculateLevel(val,25,20).level;
 }
 
 function mapStateToSensor(response) {

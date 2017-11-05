@@ -26,12 +26,11 @@
 }
 
 .sensor-marker {
-    height:60px;
-    width:60px;
-    border-radius:30px;
+    box-sizing: border-box;
+    border-radius: 50%;
     border-width: 5px;
     border-style: solid;
-    border-color: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.3);
 }
 
 .sensor-marker-cluster {
@@ -41,10 +40,13 @@
     display:flex;
     justify-content: center;
     align-items: center;
-    border-color: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.3);
     color:rgba(255,255,255,0.6);
 }
 
+.sensor-group-wios {
+    border-radius: 25% !important;
+}
 
 .leaflet-popup-content-wrapper {
     border-radius:3px;
