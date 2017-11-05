@@ -5,8 +5,6 @@ import './SensorDetails.css'
 
 class SensorDetails extends Component {
 
-    
-
     render() {
         const {sensorState} = this.props;
         const results = (sensorState || {}).results; 

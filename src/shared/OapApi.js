@@ -1,5 +1,3 @@
-import DynamoDB from "aws-sdk/clients/dynamodb";
-import {Credentials} from "aws-sdk/lib/core";
 
 /*
 
@@ -46,68 +44,31 @@ oap_{last,hour,all} {
 
 */
 
-class DynamoDBConverter {
-
-  static convert(ddb) {
-    if (!ddb) return ddb;
-    let result = {};
-    for (let prop of Object.getOwnPropertyNames(ddb)) {
-      result[prop] = DynamoDBConverter.convertAttribute(ddb[prop])
-    }
-    return result;
+function status(response) {
+  if (response.status >= 200 && response.status < 300) {
+    return Promise.resolve(response)
+  } else {
+    return Promise.reject(new Error(response.statusText))
   }
+}
 
-  static convertAttribute(ddb) {
-    if (!ddb) return ddb;
+function json(response) {
+  return response.json()
+}
 
-    //well it does not loop all right - each attribute should have exactly one of those fields.
-    for (let prop of Object.getOwnPropertyNames(ddb)) {
-      switch (prop) {
-        case 'B'    :   // B: new Buffer('...') || 'STRING_VALUE'
-        case 'BOOL' :   // BOOL: true || false,
-        case 'BS'   :   // //   BS: [
-                        //   new Buffer('...') || 'STRING_VALUE',
-                        //   /* more items */
-                        // ]
-        // eslint-disable-next-line
-        case 'S'    :   //   S: 'STRING_VALUE',
-        case 'SS'    :  //   SS: [
-                        //   'STRING_VALUE',
-                        //   /* more items */
-                        // ]
+function computeAQI(thingState) {
+  let val = thingState.results.pm.pm2_5;
+  let aqi = Math.max(0, Math.min(9, Math.floor(val / 5))); // 0 - 9, 100%pm2.5 = 5
+  return aqi
+}
 
-          return ddb[prop];
-
-        case 'N'    :   // N: 'STRING_VALUE',
-          return parseFloat(ddb.N);
-
-        case 'NN'   :   //   NS: [
-                        //   'STRING_VALUE',
-                        //   /* more items */
-                        // ],
-          return ddb.NN.map(i => parseFloat(i));
-
-        case 'NULL' :   //   NULL: true || false, (???????)
-          return null;
-
-        case 'L'    :   // L: [
-                        //   /* recursive AttributeValue */,
-                        //   /* more items */
-                        // ],
-
-          return  ddb.L.map(i => DynamoDBConverter.convertAttribute(i))
-
-        case 'M'    :   //   M: {
-                        //   someKey: /* recursive AttributeValue */,
-                        //   /* anotherKey: ... */
-                        // },
-          return DynamoDBConverter.convert(ddb.M)
-
-        default     :
-          throw new Error('unknown attribute "'+prop+'" in '+JSON.stringify(ddb))
-      }
-    }
-  }
+function mapStateToSensor(response) {
+  var result = {};
+  response.state.forEach(state=>{
+    state.results.aqi = computeAQI(state);
+    result[state.sensorId] = state;
+  });
+  return result;
 }
 
 class CacheEntry {
@@ -144,49 +105,38 @@ class Cache {
   }
 }
 
+const API_URL = "https://f3kwdjctn5.execute-api.eu-west-1.amazonaws.com/prod";
+
 export class PmService {
 
   cache = new Cache();
   LATEST_RESULTS_THRESHOLD = 3*3600; // < 3h
-
-  constructor() {
-    let myCredentials = new Credentials('AKIAIQY2RXAQQI3AKMQA', 'X+9OYTnZFRVot74yonlNGGLAiJZWwykcutecbcea');
-    this.db = new DynamoDB({
-      credentials: myCredentials,
-      region: 'eu-west-1',
-      apiVersion: '2012-08-10',
-      params: {}
-    });
-  }
 
   getSensors() {
     //we need to cheat a bit here, because config values are stored in state table and not in things table.
     return new Promise((resolve, reject) => {
         if (!this.cache.get("sensors", resolve)) {
             this.getLatestSensorsData().then((lastSensorData)=>{
-                this.db.scan({TableName: 'oap_things'}, (err, sensorsRS) => {
-                    if (err) {
-                      reject(err)
-                    } else {
-                      let sensors = {};
-                      let s,state;
-                      sensorsRS.Items.forEach(sensor => {
-                        s = DynamoDBConverter.convert(sensor);
-                        state = lastSensorData[s.sensorId];
-                        if (s.enabled && state) {
-                            // defaultConfig < stateConfig < fixedConfig
-                            s.config = Object.assign({test:1,indoor:false},state.config,s.config);
-                            s.lastSeen = state.serverTime; //fixme
-                            s.name = s.name || s.sensorId;
-                            sensors[s.sensorId] = s;
-                        }
-                      });
-                      console.debug("sensors",sensors);
-                      resolve(this.cache.put("sensors",sensors));
-                    }
-                  })
-            }, reject);
-        }
+              fetch(API_URL+"/sensors")
+              .then(status)
+              .then(json)
+              .then((data)=>{
+                let sensors = {};
+                data.sensors.forEach(s => {
+                  let state = lastSensorData[s.sensorId];
+                  if (s.enabled && state) {
+                      // defaultConfig < stateConfig < fixedConfig
+                      s.config = Object.assign({test:1,indoor:false},state.config,s.config);
+                      s.lastSeen = state.serverTime; //fixme
+                      s.name = s.name || s.sensorId;
+                      sensors[s.sensorId] = s;
+                  }
+                });
+                console.debug("sensors",sensors);
+                resolve(this.cache.put("sensors",sensors));
+              }).catch(reject);
+        }).catch(reject);
+      }
     });
   }
 
@@ -194,48 +144,38 @@ export class PmService {
     return this.getSensors().then((sensors)=>sensors[sensorId]);
   }
 
-  convertSensorData(sensorStatesRS) {
-    let sensorStates = {}
-    sensorStatesRS.Items.map(stateRS => DynamoDBConverter.convert(stateRS))
-      .forEach((state) => {
-        state.results.aqi = this.computeAQI(state);
-        sensorStates[state.sensorId] = state;
-      });
-    return sensorStates;  
-  }
-
   //TODO why do we need it? chart?
   getSensorData(query) {
-    return new Promise((resolve, reject)=>{
+    // return new Promise((resolve, reject)=>{
 
-      let queryParam = {
-        TableName:'oap_all_2',
-          KeyConditionExpression: "sensorId = :sensorId and ",
-        ExpressionAttributeNames:{
-        "#localTime": "localTime"
-      },
-        Limit:1000,
-        ExpressionAttributeValues: {
-          ":sensorId":{'S':query.sensorId},
-          ":timeFrom":{'N':''+query.timeFrom}
-        }
-      };
+    //   let queryParam = {
+    //     TableName:'oap_all_2',
+    //       KeyConditionExpression: "sensorId = :sensorId and ",
+    //     ExpressionAttributeNames:{
+    //     "#localTime": "localTime"
+    //   },
+    //     Limit:1000,
+    //     ExpressionAttributeValues: {
+    //       ":sensorId":{'S':query.sensorId},
+    //       ":timeFrom":{'N':''+query.timeFrom}
+    //     }
+    //   };
 
-      if (query.timeTo) {
-        queryParam.KeyConditionExpression+="#localTime between :timeFrom and :timeTo";
-        queryParam.ExpressionAttributeValues[':timeTo'] = {'N':''+query.timeTo};
-      } else {
-        queryParam.KeyConditionExpression+="#localTime >= :timeFrom";
-      }
+    //   if (query.timeTo) {
+    //     queryParam.KeyConditionExpression+="#localTime between :timeFrom and :timeTo";
+    //     queryParam.ExpressionAttributeValues[':timeTo'] = {'N':''+query.timeTo};
+    //   } else {
+    //     queryParam.KeyConditionExpression+="#localTime >= :timeFrom";
+    //   }
 
-      this.db.query(queryParam, (err, data)=>{
-          if (err) {
-            reject(err);
-          } else {
-            resolve(data.Items.map(item => DynamoDBConverter.convert(item)));
-          }
-      });
-    });
+    //   this.db.query(queryParam, (err, data)=>{
+    //       if (err) {
+    //         reject(err);
+    //       } else {
+    //         resolve(data.Items.map(item => DynamoDBConverter.convert(item)));
+    //       }
+    //   });
+    // });
   }
 
   getLatestSensorsData() {
@@ -243,13 +183,13 @@ export class PmService {
         const cacheKey = "data_latest";
         if (this.cache.get(cacheKey,resolve)) return;
         console.debug("search latest");
-        this.db.scan({TableName:'oap_last_2'}, (err, sensorStatesRS)=>{
-            if (err) {
-                reject(err);
-            } else {
-                resolve(this.cache.put(cacheKey, this.convertSensorData(sensorStatesRS), 60000 * 5)); //5 min
-            }
-        });
+        fetch(API_URL+"/state")
+        .then(status)
+        .then(json)
+        .then(mapStateToSensor)
+        .then((data)=>{
+          resolve(this.cache.put(cacheKey, data, 60000 * 5)); //5 min
+        }).catch(reject);
     });
   }
 
@@ -258,23 +198,14 @@ export class PmService {
         const cacheKey = "data_hourEpoch_"+hourEpoch;
         if (this.cache.get(cacheKey,resolve)) return;
         console.debug("search hourEpoch:" + hourEpoch);
-        this.db.query({
-            TableName:'oap_hour_2',
-            KeyConditionExpression: "#hourEpoch = :time",
-            ExpressionAttributeNames:{
-                "#hourEpoch": "hourEpoch"
-            },
-            ExpressionAttributeValues: {
-                ":time":{'N':''+hourEpoch}
-            }
-            }, (err, sensorStatesRS)=>{
-                if (err) {
-                    reject(err);
-                } else {
-                    resolve(this.cache.put(cacheKey, this.convertSensorData(sensorStatesRS), 60000 * 60)); //60min
-                }
-            }
-        );
+
+        fetch(API_URL+"/state/hour/"+hourEpoch)
+        .then(status)
+        .then(json)
+        .then(mapStateToSensor)
+        .then((data)=>{
+          resolve(this.cache.put(cacheKey, data, 60000 * 5)); //5 min
+        }).catch(reject);
     });
   }
 
@@ -299,11 +230,7 @@ export class PmService {
     })
   }
 
-  computeAQI(thingState) {
-    let val = thingState.results.pm.pm2_5;
-    let aqi = Math.max(0, Math.min(9, Math.floor(val / 5))); // 0 - 9, 100%pm2.5 = 5
-    return aqi
-  }
+
 
 }
 

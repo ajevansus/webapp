@@ -5,15 +5,3 @@
   left:0;
   right:0;
 }
-
-header .title {
-  flex-grow:2;
-}
-
-.appBarIcon {
-  width:30px;
-  height:30px;
-  background-image: url('/assets/logo256-grey.png');
-  background-size: cover;
-  margin-right:0.5em;
-}

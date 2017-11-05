@@ -2,16 +2,11 @@ import React, { Component }  from 'react'
 import SensorMap from './components/SensorMap'
 import {MuiThemeProvider,createMuiTheme} from 'material-ui/styles'
 //import {lightGreen} from 'material-ui/colors'
-import AppBar from 'material-ui/AppBar';
-import Toolbar from 'material-ui/Toolbar';
-import Typography from 'material-ui/Typography'
-import IconButton from 'material-ui/IconButton'
+import OapAppBar from './components/OapAppBar'
 import './App.css'
 import dataService from './shared/DataService'
 import storage from './shared/Storage'
 import DrawerSensorList from './components/DrawerSensorList'
-import List from 'material-ui-icons/List'
-import InfoOutline from 'material-ui-icons/InfoOutline'
 import ChartDialog from './components/ChartDialog'
 import AboutDialog from './components/AboutDialog'
 import {SensorLayer} from './shared/Model'
@@ -22,8 +17,6 @@ const theme = createMuiTheme({
     //primary : lightGreen
   }
 });
-
-
 
 class App extends Component {
 
@@ -100,20 +93,9 @@ class App extends Component {
             open={this.state.aboutDialogOpen}
             onRequestClose={()=>this.setState((prev)=>(Object.assign({},prev,{aboutDialogOpen:false})))} />   
 
-          <AppBar position="absolute">
-          <Toolbar>
-            <div className="appBarIcon"></div>
-            <Typography type="title" color="inherit" className="title">
-              OpenAirProject
-            </Typography>
-            <IconButton color="contrast" onClick={()=>this.toggleMenu(!this.state.drawerOpen)}>
-                <List />
-            </IconButton>
-            <IconButton color="contrast" onClick={()=>this.setState((prev)=>(Object.assign({},prev,{aboutDialogOpen:true})))}>
-                <InfoOutline />
-            </IconButton>
-            </Toolbar>
-          </AppBar>
+          <OapAppBar
+            onDrawerToggleClick={()=>this.toggleMenu(!this.state.drawerOpen)}
+            onInfoClick={()=>this.setState((prev)=>(Object.assign({},prev,{aboutDialogOpen:true})))}/>
 
           <DrawerSensorList drawerOpen={this.state.drawerOpen}
               title={dataService.getLayerTitle()}
