@@ -198,38 +198,11 @@ export class PmService {
     return this.getSensors().then((sensors)=>sensors[sensorId]);
   }
 
-  //TODO why do we need it? chart?
   getSensorData(query) {
-    // return new Promise((resolve, reject)=>{
-
-    //   let queryParam = {
-    //     TableName:'oap_all_2',
-    //       KeyConditionExpression: "sensorId = :sensorId and ",
-    //     ExpressionAttributeNames:{
-    //     "#localTime": "localTime"
-    //   },
-    //     Limit:1000,
-    //     ExpressionAttributeValues: {
-    //       ":sensorId":{'S':query.sensorId},
-    //       ":timeFrom":{'N':''+query.timeFrom}
-    //     }
-    //   };
-
-    //   if (query.timeTo) {
-    //     queryParam.KeyConditionExpression+="#localTime between :timeFrom and :timeTo";
-    //     queryParam.ExpressionAttributeValues[':timeTo'] = {'N':''+query.timeTo};
-    //   } else {
-    //     queryParam.KeyConditionExpression+="#localTime >= :timeFrom";
-    //   }
-
-    //   this.db.query(queryParam, (err, data)=>{
-    //       if (err) {
-    //         reject(err);
-    //       } else {
-    //         resolve(data.Items.map(item => DynamoDBConverter.convert(item)));
-    //       }
-    //   });
-    // });
+    return fetch(API_URL+"/state/sensor/"+query.sensorId+"?timeFrom="+(query.timeFrom || '')+"&timeTo="+(query.timeTo || '')
+    )
+        .then(status)
+        .then(json);
   }
 
   getLatestSensorsData() {

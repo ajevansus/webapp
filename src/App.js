@@ -78,11 +78,18 @@ class App extends Component {
   }
 
   onChartClick(sensor) {
-    this.setState((prev)=>(Object.assign({},prev,{chartDialog:{sensor:sensor}})))
+    this.setState((prev)=>(Object.assign({},prev,{chartDialog:{sensors:[sensor],params:["pm2_5"]}})))
   }
 
   toggleMenu(opened) {
     this.setState(Object.assign({},this.state,{drawerOpen:opened}));
+  }
+
+  renderChartDialog() {
+      return (<ChartDialog
+      open={!!this.state.chartDialog}
+      chartParams={this.state.chartDialog}
+      onRequestClose={()=>this.setState((prev)=>(Object.assign({},prev,{chartDialog:null})))} />)
   }
 
   render() {
@@ -90,11 +97,7 @@ class App extends Component {
       <MuiThemeProvider theme={theme}>
         <div className="cnt">
 
-       
-          <ChartDialog
-            open={!!this.state.chartDialog}
-            chartParams={this.state.chartDialog}
-            onRequestClose={()=>this.setState((prev)=>(Object.assign({},prev,{chartDialog:null})))} />
+          {this.renderChartDialog()}
 
           <AboutDialog
             open={this.state.aboutDialogOpen}

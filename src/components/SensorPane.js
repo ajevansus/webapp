@@ -27,11 +27,14 @@ const styles = theme => ({
     },
     headerTitle : {fontSize:'1.5em',fontWeight:'normal',padding:'0.25em 0.25em 0 0',display:'flex',alignItems:'center'},
     subheader : {
-        display:'flex',
         width:'100%',
         color:'#999',
-        fontWeight:'normal',
-        alignItems:'center'
+        fontWeight:'normal'
+    },
+    subheaderRow: {
+        display:'flex',
+        alignItems:'center',
+        flexWrap:'wrap'
     },
     avatarInner: {border:'1px solid #eee'},
     headerRoot :{
@@ -81,13 +84,18 @@ class SensorPane extends Component {
     render() {
         // eslint-disable-next-line
         const {sensorTuple,onFavoriteClick,onInfoClick,onChartClick,onClick,classes,indicator,collapsible} = this.props;
-        const subheader = <div className={classes.subheader}>
-
-{sensorTuple.sensor.config.test ? <BugReport className={classes.headerIcon}/> : ''}
-            {sensorTuple.sensor.config.indoor ? <Home className={classes.headerIcon}/> : <NaturePeople className={classes.headerIcon}/>}
-            {moment(((sensorTuple.state||{}).localTime || sensorTuple.sensor.lastSeen)*1000).calendar()}
-            <span className={classes.flexGrow}/>
-        </div>
+        const address = sensorTuple.sensor.address || {};
+        const subheader = ([
+            <div className={classes.subheaderRow} key="1">
+                {sensorTuple.sensor.config.test ? <BugReport className={classes.headerIcon}/> : ''}
+                {sensorTuple.sensor.config.indoor ? <Home className={classes.headerIcon}/> : <NaturePeople className={classes.headerIcon}/>}
+                <div>{address.city}</div>
+                {address.street ? <div>,&nbsp;{address.street}</div> : ''}
+            </div>,
+            <div className={classes.subheaderRow} key="2">
+                {moment(((sensorTuple.state||{}).localTime || sensorTuple.sensor.lastSeen)*1000).calendar()}
+            </div>
+        ])
 
         const title = (<div className={classes.headerTitle}>{sensorTuple.sensor.name}
                             <span className={classes.flexGrow}/>
@@ -114,9 +122,9 @@ class SensorPane extends Component {
                 <IconButton onClick={onFavoriteClick}>
                     {sensorTuple.user.fav ? <Favorite/> : <FavoriteBorder/>}
                 </IconButton>
-                {/* <IconButton onClick={onChartClick}>
+                {<IconButton onClick={onChartClick}>
                     <Timeline/>
-                </IconButton> */}
+                </IconButton>}
                 { sensorTuple.sensor.link ? (
                 <IconButton onClick={onInfoClick}>
                     <InfoOutline/>
